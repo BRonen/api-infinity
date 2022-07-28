@@ -1,0 +1,10 @@
+[
+    {
+        "projectID": "Number",
+        "name": "String",
+        "nextStep": "String",
+        "created": "Data()",
+        "supervisor": "String",
+        "completed": "Boolean"
+    }
+]

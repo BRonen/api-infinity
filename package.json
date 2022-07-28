@@ -1,0 +1,25 @@
+{
+  "dependencies": {
+    "body-parser": "^1.20.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.1",
+    "jsonwebtoken": "^8.5.1"
+  },
+  "name": "api-infinity",
+  "version": "0.0.1",
+  "description": "Project management API to Infinity Lab's",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/infinitydevlab/api-infinity.git"
+  },
+  "author": "Infinity Lab's",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/infinitydevlab/api-infinity/issues"
+  },
+  "homepage": "https://github.com/infinitydevlab/api-infinity#readme"
+}
