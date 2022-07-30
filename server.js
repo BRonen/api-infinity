@@ -35,12 +35,12 @@ const Project = mongoose.model("Project", projectModel);
 // Get all Projects
 app.get("/projects", (req, res) => {
 
-    Project.find({}).then(resposta=>{
+    Project.find({}).then(resposta => {
         res.send(resposta)
-        }).catch(()=>{
-           res.send("ERROR AO ENCONTRAR PROJETO")
-        })
-    
+    }).catch(() => {
+        res.send("ERROR AO ENCONTRAR PROJETO")
+    })
+
 })
 
 
@@ -49,15 +49,17 @@ app.get("/projects", (req, res) => {
 // Get one project
 app.get("/project", (req, res) => {
     let { pjid } = req.body
+    const existResult =  Project.findOne({ "pjid": pjid }).select("pjid").lean();
 
-    if(Project.exist({"pjid":pjid})){
-        Project.find({"pjid":pjid}).then(resposta=>{
-            res.send(resposta) 
-            }).catch(()=>{
-               res.send(400)
-            })
-    }else{
 
+    if (existResult) {
+        Project.find({ "pjid": pjid }).then(resposta => {
+            res.send(resposta)
+        }).catch(() => {
+            res.send(400)
+        })
+    } else {
+        res.send(400)
     }
 
 
@@ -65,11 +67,12 @@ app.get("/project", (req, res) => {
 
 // Delete a project
 app.delete("/project", (req, res) => {
-Project.deleteMany({"pjid": pjid}).then(() =>{
-res.sendStatus(200)
-}).catch(()=>{
-    res.sendStatus(400)
-})
+    let { pjid } = req.body
+    Project.deleteMany({ "pjid": pjid }).then(() => {
+        res.sendStatus(200)
+    }).catch(() => {
+        res.sendStatus(400)
+    })
 
 
 })
@@ -77,13 +80,13 @@ res.sendStatus(200)
 
 // Create new project
 app.post("/project", (req, res) => {
-    let { name, about, next, finished, supervisor, members} = req.body
-    const resultID = Math.random()*(90000 - 10000) + 10000
+    let { name, about, next, supervisor, members } = req.body
+    const resultID = Math.random() * (90000 - 10000) + 10000
 
-    
-    const nProject = new Project({ pjid: Math.floor(resultID), name: name, about: about, next: next, finished: finished, supervisor: supervisor ,members: members})
+
+    const nProject = new Project({ pjid: Math.floor(resultID), name: name, about: about, next: next, finished: false, supervisor: supervisor, members: members })
     nProject.save().then(() => {
- 
+  res.sendStatus(200)
     }).catch(() => {
         res.sendStatus(403)
         res.send("Erro ao salvar projecto!")
@@ -94,12 +97,37 @@ app.post("/project", (req, res) => {
 
 // Edit or update a data project
 app.put("/project", (req, res) => {
-  let {pjid} = req.body
-    Project.find({"pjid": pjid}).then(resposta=>{
-        res.send(resposta)
-        }).catch(()=>{
-           res.send("ERROR AO ENCONTRAR PROJETO")
+    let { pjid, name, about, next, finished, supervisor, members } = req.body
+
+    const existResult = Project.findOne({ "pjid": pjid }).select("pjid").lean();
+
+
+    if (existResult) {
+
+        Project.find({ "pjid": pjid }).then(resposta => {
+
+
+            if (name == undefined) { let name = resposta.name }
+            if (about == undefined) { let about = resposta.about }
+            if (next == undefined) { let next = resposta.next }
+            if (finished == undefined) { let finished = resposta.finished }
+            if (supervisor == undefined) { let supervisor = resposta.supervisor }
+            if (members == undefined) { let members = resposta.name }
+
+            Project.findOneAndUpdate({ "pjid": pjid }, { "name": name, "about": about, "next": next, "finished": finished, "supervisor": supervisor, "members": members })
+                .then(() => {
+                    res.send(200)
+                }).catch(() => {
+                    res.send(400)
+                });
+
+        }).catch(() => {
+            res.send(400)
         })
+    } else {
+
+    }
+
 
 })
 
