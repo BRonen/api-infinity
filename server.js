@@ -9,6 +9,12 @@
 
 
 
+const mongoose = require("mongoose")
+const projectModel = require("./projects.js")
+mongoose.connect("mongodb://127.0.0.1:27017/infinityAPI").then(() =>
+    console.log("Conexão com banco de dados foi realizada com sucesso!")
+).catch(() => console.log("ERROR na conexão com banco de dados")
+)
 
 const express = require('express')
 const app = express()
@@ -23,9 +29,18 @@ app.use(bodyParser.json())
 app.use(cors())
 
 
+
+const Project = mongoose.model("Project", projectModel);
+
 // Get all Projects
 app.get("/projects", (req, res) => {
-    // RETORNAR LIST ALL DO BANCO DE DADOS
+
+    Project.find({}).then(resposta=>{
+        res.send(resposta)
+        }).catch(()=>{
+           res.send("ERROR AO ENCONTRAR PROJETO")
+        })
+    
 })
 
 
@@ -33,15 +48,15 @@ app.get("/projects", (req, res) => {
 
 // Get one project
 app.get("/project", (req, res) => {
-    let { id } = req.body
-    let projectExist = false // projectExist é uma booleana seria o resultado de um filtro verificando se o ID requisitado realmente existe no bando de dados
+    let { pjid } = req.body
 
-    if (projectExist = true) { // verifica se o projeto existe
-
-        // faça se existir
-
-    } else {
-        res.sendStatus(404)
+    if(Project.exist({"pjid":pjid})){
+        Project.find({"pjid":pjid}).then(resposta=>{
+            res.send(resposta) 
+            }).catch(()=>{
+               res.send(400)
+            })
+    }else{
 
     }
 
@@ -50,7 +65,11 @@ app.get("/project", (req, res) => {
 
 // Delete a project
 app.delete("/project", (req, res) => {
-
+Project.deleteMany({"pjid": pjid}).then(() =>{
+res.sendStatus(200)
+}).catch(()=>{
+    res.sendStatus(400)
+})
 
 
 })
@@ -58,44 +77,29 @@ app.delete("/project", (req, res) => {
 
 // Create new project
 app.post("/project", (req, res) => {
-    let randomID = Math.floor(Math.random() * (90000 - 10000) + 10000)
-    let projectExist = false // projectExist é uma booleana seria o resultado de um filtro verificando se o ID requisitado realmente existe no bando de dados
-    let { name, description, supervisor } = req.body
-    if (projectExist = true) {
-     // try again
-    } else {
-        let newProject = {
-            id: randomID, // ID Do projeto
-            name: name, // nome do projeto
-            description: description, // descrição
-            nextStep: undefined, // proximo passo a ser feito no projeto
-            created: Date(), // data de criação do projeto
-            supervisor: supervisor, // DiscordID do supervisor
-            finished: false // projeto foi finalizado?
-        }
-        res.sendStatus(200) // colocar isso dentro de um promisse caso consiga escrever no bando de dados.
-    }
+    let { name, about, next, finished, supervisor, members} = req.body
+    const resultID = Math.random()*(90000 - 10000) + 10000
 
-    console.log(newProject)
+    
+    const nProject = new Project({ pjid: Math.floor(resultID), name: name, about: about, next: next, finished: finished, supervisor: supervisor ,members: members})
+    nProject.save().then(() => {
+ 
+    }).catch(() => {
+        res.sendStatus(403)
+        res.send("Erro ao salvar projecto!")
+    })
+
+
 })
 
 // Edit or update a data project
 app.put("/project", (req, res) => {
-    let { id, supervisor } = req.body
-    let projectExist = false // projectExist é uma booleana seria o resultado de um filtro verificando se o ID requisitado realmente existe no bando de dados
-
-    if (projectExist = true) { // verificase o projeto existe
-
-        let databaseReturn = { "supervisor": "123123123" } // retorno do projeto no banco de dados que seria achado pelo ID
-        if (supervisor == databaseReturn.supervisor) { //  verificaria se o usuario que tentou excluir o projeto é supervisor dele se não negue o acesso
-
-        } else {
-            res.sendStatus(403)
-        }
-    } else {
-        res.sendStatus(404)
-
-    }
+  let {pjid} = req.body
+    Project.find({"pjid": pjid}).then(resposta=>{
+        res.send(resposta)
+        }).catch(()=>{
+           res.send("ERROR AO ENCONTRAR PROJETO")
+        })
 
 })
 
