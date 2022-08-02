@@ -5,86 +5,73 @@ const Project = require('./models/Project')
 const router = express.Router()
 
 // Get all Projects
-router.get('/projects', (req, res) => {
-    Project.find({}).then(resposta => {
-        res.send(resposta)
-    }).catch(() => {
-        res.send('ERROR AO ENCONTRAR PROJETO')
-    })
+router.get('/projects', async (req, res) => {
+    const projects = await Project.find()
+    
+    res.json(projects)
 })
 
 // Get one project
-router.get('/project', (req, res) => {
-    let { pjid } = req.body
-    const existResult =  Project.findOne({ 'pjid': pjid }).select('pjid').lean();
+router.get('/project/:pjid', async (req, res) => {
+    const { pjid } = req.params
+    const result = await Project.findOne({ pjid })
 
-    if (existResult) {
-        Project.find({ 'pjid': pjid }).then(resposta => {
-            res.send(resposta)
-        }).catch(() => {
-            res.send(400)
-        })
-    } else {
-        res.send(400)
-    }
+    if (!result)
+        return res.status(404).json({error: 'project not found.'})
 
+    return res.json(result)
 })
 
 // Delete a project
-router.delete('/project', (req, res) => {
-    let { pjid } = req.body
-    Project.deleteMany({ 'pjid': pjid }).then(() => {
-        res.sendStatus(200)
-    }).catch(() => {
-        res.sendStatus(400)
-    })
+router.delete('/project', async (req, res) => {
+    const { pjid } = req.body
+    const projectDeleted = await Project.findOneAndDelete({ pjid })
+
+    if (!projectDeleted)
+        return res.status(404).json({error: 'project not found.'})
+    
+    return res.json(projectDeleted)
 })
 
 // Create new project
-router.post('/project', (req, res) => {
-    let { name, about, next, supervisor, members } = req.body
+router.post('/project', async (req, res) => {
+    const {
+        name, about, next,
+        supervisor, members
+    } = req.body
+
     const resultID = Math.random() * (90000 - 10000) + 10000
 
-    const nProject = new Project({ pjid: Math.floor(resultID), name: name, about: about, next: next, finished: false, supervisor: supervisor, members: members })
-    nProject.save().then(() => {
-  res.sendStatus(200)
-    }).catch(() => {
-        res.sendStatus(403)
-        res.send('Erro ao salvar projecto!')
+    const projectExists = await Project.findOne({ name })
+
+    if(projectExists)
+      return res.status(400).json({ error: 'project already exists.' })
+
+    const project = await Project.create({
+        pjid: Math.floor(resultID),
+        name, about, next,
+        supervisor, members,
+        finished: false
     })
+
+    return res.json(project)
 })
 
 // Edit or update a data project
-router.put('/project', (req, res) => {
-    let { pjid, name, about, next, finished, supervisor, members } = req.body
+router.put('/project', async (req, res) => {
+    const {
+        pjid, name, about,
+        next, finished,
+        supervisor, members
+    } = req.body
 
-    const existResult = Project.findOne({ 'pjid': pjid }).select('pjid').lean();
+    const project = Project.findOneAndUpdate({ pjid }, {
+        name, about,
+        next, finished,
+        supervisor, members
+    })
 
-    if (existResult) {
-
-        Project.find({ 'pjid': pjid }).then(resposta => {
-
-            if (name == undefined) { let name = resposta.name }
-            if (about == undefined) { let about = resposta.about }
-            if (next == undefined) { let next = resposta.next }
-            if (finished == undefined) { let finished = resposta.finished }
-            if (supervisor == undefined) { let supervisor = resposta.supervisor }
-            if (members == undefined) { let members = resposta.name }
-
-            Project.findOneAndUpdate({ 'pjid': pjid }, { 'name': name, 'about': about, 'next': next, 'finished': finished, 'supervisor': supervisor, 'members': members })
-                .then(() => {
-                    res.send(200)
-                }).catch(() => {
-                    res.send(400)
-                });
-
-        }).catch(() => {
-            res.send(400)
-        })
-    } else {
-
-    }
-
+    return res.json(project)
 })
 
 module.exports = router
