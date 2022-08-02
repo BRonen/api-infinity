@@ -11,7 +11,7 @@
 
 const mongoose = require("mongoose")
 const projectModel = require("./projects.js")
-mongoose.connect("mongodb://127.0.0.1:27017/infinityAPI").then(() =>
+mongoose.connect(process.env.MONGO_URI).then(() =>
     console.log("Conexão com banco de dados foi realizada com sucesso!")
 ).catch(() => console.log("ERROR na conexão com banco de dados")
 )
