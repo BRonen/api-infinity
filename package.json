@@ -10,9 +10,9 @@
   "name": "api-infinity",
   "version": "0.0.1",
   "description": "Project management API to Infinity Lab's",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "npx nodemon server.js"
+    "start": "nodemon src/server.js"
   },
   "repository": {
     "type": "git",
