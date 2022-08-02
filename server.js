@@ -1,59 +1,42 @@
 // PROJETO ESTÁ EM ANDAMENTO, ESTAMOS INCREMENTANDO AO BANCO DE DADOS AINDA...
 // IREMOS IMPLEMENTAR MongoDB, se tem conhecimento e quer ajudar chame um dos supervisores no discord.
 
+const mongoose = require('mongoose')
 
+const projectModel = require('./projects.js')
 
-
-
-
-
-
-
-const mongoose = require("mongoose")
-const projectModel = require("./projects.js")
 mongoose.connect(process.env.MONGO_URI).then(() =>
-    console.log("Conexão com banco de dados foi realizada com sucesso!")
-).catch(() => console.log("ERROR na conexão com banco de dados")
-)
+    console.log('Conexão com banco de dados foi realizada com sucesso!')
+).catch(() => console.log('ERROR na conexão com banco de dados'))
 
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
-const cors = require("cors")
-const jwt = require("jsonwebtoken")
-const JWTSecret = "infinitydev"
-
+const cors = require('cors')
+const jwt = require('jsonwebtoken')
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(cors())
 
-
-
-const Project = mongoose.model("Project", projectModel);
+const Project = mongoose.model('Project', projectModel);
 
 // Get all Projects
-app.get("/projects", (req, res) => {
-
+app.get('/projects', (req, res) => {
     Project.find({}).then(resposta => {
         res.send(resposta)
     }).catch(() => {
-        res.send("ERROR AO ENCONTRAR PROJETO")
+        res.send('ERROR AO ENCONTRAR PROJETO')
     })
-
 })
 
-
-
-
 // Get one project
-app.get("/project", (req, res) => {
+app.get('/project', (req, res) => {
     let { pjid } = req.body
-    const existResult =  Project.findOne({ "pjid": pjid }).select("pjid").lean();
-
+    const existResult =  Project.findOne({ 'pjid': pjid }).select('pjid').lean();
 
     if (existResult) {
-        Project.find({ "pjid": pjid }).then(resposta => {
+        Project.find({ 'pjid': pjid }).then(resposta => {
             res.send(resposta)
         }).catch(() => {
             res.send(400)
@@ -62,50 +45,41 @@ app.get("/project", (req, res) => {
         res.send(400)
     }
 
-
 })
 
 // Delete a project
-app.delete("/project", (req, res) => {
+app.delete('/project', (req, res) => {
     let { pjid } = req.body
-    Project.deleteMany({ "pjid": pjid }).then(() => {
+    Project.deleteMany({ 'pjid': pjid }).then(() => {
         res.sendStatus(200)
     }).catch(() => {
         res.sendStatus(400)
     })
-
-
 })
 
-
 // Create new project
-app.post("/project", (req, res) => {
+app.post('/project', (req, res) => {
     let { name, about, next, supervisor, members } = req.body
     const resultID = Math.random() * (90000 - 10000) + 10000
-
 
     const nProject = new Project({ pjid: Math.floor(resultID), name: name, about: about, next: next, finished: false, supervisor: supervisor, members: members })
     nProject.save().then(() => {
   res.sendStatus(200)
     }).catch(() => {
         res.sendStatus(403)
-        res.send("Erro ao salvar projecto!")
+        res.send('Erro ao salvar projecto!')
     })
-
-
 })
 
 // Edit or update a data project
-app.put("/project", (req, res) => {
+app.put('/project', (req, res) => {
     let { pjid, name, about, next, finished, supervisor, members } = req.body
 
-    const existResult = Project.findOne({ "pjid": pjid }).select("pjid").lean();
-
+    const existResult = Project.findOne({ 'pjid': pjid }).select('pjid').lean();
 
     if (existResult) {
 
-        Project.find({ "pjid": pjid }).then(resposta => {
-
+        Project.find({ 'pjid': pjid }).then(resposta => {
 
             if (name == undefined) { let name = resposta.name }
             if (about == undefined) { let about = resposta.about }
@@ -114,7 +88,7 @@ app.put("/project", (req, res) => {
             if (supervisor == undefined) { let supervisor = resposta.supervisor }
             if (members == undefined) { let members = resposta.name }
 
-            Project.findOneAndUpdate({ "pjid": pjid }, { "name": name, "about": about, "next": next, "finished": finished, "supervisor": supervisor, "members": members })
+            Project.findOneAndUpdate({ 'pjid': pjid }, { 'name': name, 'about': about, 'next': next, 'finished': finished, 'supervisor': supervisor, 'members': members })
                 .then(() => {
                     res.send(200)
                 }).catch(() => {
@@ -128,9 +102,7 @@ app.put("/project", (req, res) => {
 
     }
 
-
 })
-
 
 app.listen(3000, () => {
     console.log(`http://localhost:3000`)
